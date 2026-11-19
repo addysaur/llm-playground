@@ -1,0 +1,1122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<link rel="icon" href="data:," />
+<title>LLM Playground — OPSEC LEVEL: BIBISI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070a07; --bg2:#0b100b; --panel:#10160f; --panel2:#141c12; --panel3:#0d130c;
+  --line:#243020; --line2:#2f4229;
+  --ink:#e8f0e2; --ink-dim:#a9bba0; --ink-faint:#74876c;
+  --green:#7ed957; --green-deep:#3f9e2c; --frog:#57b83e;
+  --red:#ff4b2e; --red-deep:#e23a1f; --amber:#ffb02e;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --disp:'Archivo',system-ui,sans-serif;
+  --body:'Inter',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;overflow:hidden}
+button,[role="button"],select,input,textarea{min-height:36px}
+button{cursor:pointer;font-family:inherit}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#2c3d27;border-radius:6px;border:2px solid var(--bg)}::-webkit-scrollbar-track{background:transparent}
+.scanlines{pointer-events:none;position:fixed;inset:0;z-index:3;background:repeating-linear-gradient(0deg,rgba(255,255,255,.014) 0 1px,transparent 1px 3px);mix-blend-mode:overlay}
+a{color:var(--green)}
+
+/* ============ AVATAR (Pepe / V) ============ */
+.avatar-wrap{position:relative;flex:none}
+.avatar{overflow:visible;display:block}
+.avatar .head{animation:bob 3.6s ease-in-out infinite;transform-origin:50% 60%}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
+.avatar .eyelids{transform-origin:center;animation:blink 4.6s infinite}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+.avatar .pupils{transition:transform .35s ease}
+.avatar .mouth-talk{display:none}
+.avatar.speaking .mouth-still{display:none}
+.avatar.speaking .mouth-talk{display:block;animation:talk .28s ease-in-out infinite alternate;transform-origin:center}
+@keyframes talk{from{transform:scaleY(.45)}to{transform:scaleY(1.15)}}
+.avatar.thinking .pupils{animation:thinklook 1.1s ease-in-out infinite}
+@keyframes thinklook{0%,100%{transform:translateX(0)}30%{transform:translateX(2.6px)}65%{transform:translateX(-2.6px)}}
+.avatar .halo{animation:haloPulse 3.6s ease-in-out infinite;transform-origin:center}
+@keyframes haloPulse{0%,100%{opacity:.25;transform:scale(1)}50%{opacity:.5;transform:scale(1.05)}}
+
+/* ============ STARTUP SCREEN ============ */
+#startup{position:fixed;inset:0;z-index:60;background:radial-gradient(900px 600px at 50% 18%,#16240f 0%,var(--bg) 62%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;overflow:auto}
+#startup.gone{display:none}
+#startup .grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(126,217,87,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(126,217,87,.05) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(70% 60% at 50% 45%,#000 30%,transparent 100%)}
+#startup .inner{position:relative;max-width:620px;width:100%}
+.stamp{display:inline-block;font-family:var(--mono);font-weight:600;letter-spacing:.14em;font-size:11px;color:var(--green);border:1.5px solid var(--green-deep);padding:7px 12px;border-radius:4px;transform:rotate(-2deg);background:rgba(63,158,44,.08)}
+#startup h1{font-family:var(--disp);font-weight:900;font-size:clamp(40px,8vw,72px);line-height:.98;margin:20px 0 6px;letter-spacing:-.01em;text-transform:uppercase}
+#startup h1 .thin{display:block;font-size:.38em;font-weight:800;letter-spacing:.34em;color:var(--green);margin-bottom:10px}
+#startup p.lede{color:var(--ink-dim);font-size:15.5px;line-height:1.65;max-width:480px;margin:14px auto 0}
+#startup p.lede b{color:var(--ink)}
+.start-avatar{margin:6px auto 2px;width:172px;height:150px;position:relative}
+.start-avatar .shadow{position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);width:110px;height:14px;border-radius:50%;background:rgba(0,0,0,.55);filter:blur(6px)}
+.start-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+.btn{border:1px solid var(--line2);background:var(--panel2);color:var(--ink);border-radius:8px;padding:0 20px;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:8px;min-height:46px}
+.btn:hover{border-color:var(--green-deep)}
+.btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+.btn.primary:hover{background:var(--red-deep)}
+.btn.green{background:var(--green-deep);border-color:var(--green-deep);color:#06130a}
+.btn.green:hover{background:var(--green)}
+.btn.small{min-height:36px;padding:0 13px;font-size:13px;border-radius:7px}
+.btn.block{width:100%;justify-content:center}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.start-meta{margin-top:26px;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);line-height:1.9}
+.start-meta .ok{color:var(--green)}
+
+/* ============ APP FRAME — single clean column ============ */
+#app{display:none;height:100dvh;flex-direction:column}
+#app.on{display:flex}
+header.topbar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--line);position:relative;z-index:20;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:11px;min-width:0;position:relative}
+.brand h1{font-family:var(--disp);font-weight:900;font-size:19px;margin:0;letter-spacing:.01em;white-space:nowrap}
+.brand .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:#06130a;background:var(--green);font-weight:600;padding:3px 7px;border-radius:3px;white-space:nowrap}
+.model-box{display:flex;align-items:center;gap:8px;min-width:0}
+.model-box select{background:var(--panel2);color:var(--ink);border:1px solid var(--line2);border-radius:7px;padding:0 10px;font-family:var(--mono);font-size:13px;max-width:300px;min-height:38px}
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.live-badge{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--green);border:1.5px solid var(--green-deep);border-radius:999px;padding:7px 13px;white-space:nowrap;background:rgba(63,158,44,.07)}
+.live-badge.off{color:var(--amber);border-color:#7a5a17;background:rgba(255,176,46,.06)}
+.live-badge.warn{color:var(--amber);border-color:#7a5a17;background:rgba(255,176,46,.06)}
+.live-badge .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:6px;animation:pulseDot 1.8s infinite}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.3}}
+
+main.stage{flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);position:relative}
+#chatLog{flex:1;overflow-y:auto;padding:22px 18px;display:flex;flex-direction:column;gap:16px}
+.empty-state{margin:auto;text-align:center;max-width:420px;color:var(--ink-faint);padding:20px;line-height:1.65}
+.empty-state b{color:var(--ink-dim);display:block;font-size:15px;margin-bottom:6px}
+.msg{display:flex;gap:11px;max-width:820px;width:100%;margin:0 auto}
+.msg .bubble{border-radius:10px;padding:12px 15px;line-height:1.65;font-size:14.5px;white-space:pre-wrap;word-break:break-word;min-width:0}
+.msg.user{flex-direction:row-reverse}
+.msg.user .bubble{background:#1d2b18;border:1px solid #31492a}
+.msg.assistant .bubble{background:var(--panel);border:1px solid var(--line)}
+.msg .bubble code{font-family:var(--mono);font-size:.88em;background:rgba(126,217,87,.12);padding:1px 5px;border-radius:4px}
+.msg .bubble pre{background:#050705;border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;white-space:pre}
+.msg .bubble pre code{background:none;padding:0}
+.msg.error .bubble{border-color:#6e2415;background:#221009;color:#ffb4a3}
+.msg .mini-av{width:34px;flex:none;margin-top:2px}
+.typing{display:inline-flex;gap:5px;padding:4px 0}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:tp 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes tp{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+
+.composer{border-top:1px solid var(--line);background:var(--bg2);padding:12px 16px 10px}
+.composer-box{max-width:820px;margin:0 auto}
+#promptInput{width:100%;min-height:104px;max-height:280px;resize:vertical;font-size:14.5px;line-height:1.6;background:var(--panel);border:1px solid var(--line2);border-radius:9px;color:var(--ink);padding:11px 13px;font-family:inherit}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--green-deep);outline-offset:0;border-color:var(--green-deep)}
+.composer-foot{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.kbd-hint{font-size:12px;color:var(--ink-faint);font-family:var(--mono)}
+#submitBtn{margin-left:auto;min-height:44px;padding:0 26px;font-size:15px}
+.stats-line{max-width:820px;margin:8px auto 0;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.stats-line button{background:none;border:none;color:var(--green);font-family:var(--mono);font-size:11.5px;padding:2px 0;min-height:0;text-decoration:underline;text-underline-offset:3px}
+
+/* ============ SETTINGS DRAWER (everything from the reference, on demand) ============ */
+#scrim{position:fixed;inset:0;background:rgba(3,5,3,.6);z-index:44;opacity:0;pointer-events:none;transition:opacity .25s}
+#scrim.on{opacity:1;pointer-events:auto}
+#drawer{position:fixed;top:0;right:0;bottom:0;width:min(400px,94vw);background:var(--panel3);border-left:1px solid var(--line2);z-index:45;transform:translateX(105%);transition:transform .3s cubic-bezier(.32,.72,.35,1);overflow-y:auto;padding:18px 18px 28px;box-shadow:-24px 0 60px rgba(0,0,0,.5)}
+#drawer.open{transform:translateX(0)}
+#drawer .drawer-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+#drawer .drawer-head h2{font-family:var(--disp);font-weight:800;font-size:19px;margin:0}
+#drawer .drawer-head .x{margin-left:auto;background:none;border:none;color:var(--ink-dim);font-size:24px;min-width:40px}
+#drawer h3{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--ink-dim);margin:26px 0 10px;text-transform:uppercase}
+#drawer h3:first-of-type{margin-top:14px}
+.field{margin-bottom:18px}
+.field label.flabel{display:block;font-weight:600;font-size:13px;margin-bottom:7px}
+.field .hint{font-size:12px;color:var(--ink-faint);line-height:1.55;margin-top:7px}
+.field .hint.warn{color:var(--amber)}
+input[type=password],input[type=text]{background:var(--panel2);border:1px solid var(--line2);border-radius:7px;color:var(--ink);padding:9px 11px;font-size:13.5px;width:100%;font-family:inherit}
+input[type=password]{font-family:var(--mono)}
+.checkline{display:flex;align-items:center;gap:9px;margin-top:9px;font-size:13px;color:var(--ink-dim);cursor:pointer;padding:4px 0;min-height:36px}
+.checkline input{width:17px;height:17px;accent-color:var(--green-deep);min-height:0}
+.slider-row{display:flex;align-items:center;gap:12px}
+.slider-row input[type=range]{flex:1;accent-color:var(--red);min-height:36px}
+.slider-row input[type=number]{width:74px;flex:none;text-align:center;font-family:var(--mono);background:var(--panel2);border:1px solid var(--line2);border-radius:7px;color:var(--ink);padding:9px 6px;font-size:13.5px}
+.toggle-row{display:flex;align-items:center;gap:10px;min-height:40px}
+.switch{position:relative;width:42px;height:24px;flex:none;display:inline-block}
+.switch input{appearance:none;-webkit-appearance:none;width:42px;height:24px;margin:0;background:#2a3626;border:none;border-radius:999px;position:relative;cursor:pointer;min-height:0;transition:background .2s;display:block}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#cfe3c6;transition:transform .2s}
+.switch input:checked{background:var(--green-deep)}
+.switch input:checked::after{transform:translateX(18px)}
+.switch input:disabled{opacity:.35;cursor:not-allowed}
+.key-status{font-family:var(--mono);font-size:11.5px;margin-top:8px;line-height:1.6}
+.key-status.ok{color:var(--green)} .key-status.bad{color:#ff8a76} .key-status.idle{color:var(--ink-faint)} .key-status.warn{color:var(--amber)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+.card h3{margin:0 0 6px!important}
+.card .sub{font-size:12px;color:var(--ink-faint);line-height:1.55;margin:0 0 10px}
+.verdict{display:inline-block;font-family:var(--mono);font-weight:600;font-size:12.5px;letter-spacing:.06em;color:var(--red);border:1.5px solid var(--red-deep);border-radius:5px;padding:6px 11px;background:rgba(255,75,46,.07)}
+.verdict.plain{color:var(--ink-dim);border-color:var(--line2);background:none}
+.rule{border-top:1px dashed var(--line);padding:8px 0;font-size:12.5px;line-height:1.55;color:var(--ink-dim)}
+.rule:first-of-type{border-top:none}
+.rule .mark{font-family:var(--mono);font-weight:600}
+.rule .yes{color:var(--green)} .rule .no{color:#5c6e57}
+.rule .found{color:var(--amber);font-family:var(--mono);font-size:12px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center;gap:6px;margin-top:6px}
+.stat-grid .num{font-family:var(--mono);font-size:19px;font-weight:600}
+.stat-grid .lab{font-size:10.5px;color:var(--ink-faint);line-height:1.4;margin-top:2px}
+.usage-rows{font-size:13px}
+.usage-rows .row{display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed var(--line)}
+.usage-rows .row:first-child{border-top:none}
+.usage-rows .row b{font-family:var(--mono);font-weight:600}
+.meter{height:7px;background:#1c281a;border-radius:99px;overflow:hidden;margin-top:10px}
+.meter i{display:block;height:100%;background:var(--green);width:100%;transition:width .4s}
+
+/* ============ MODALS ============ */
+.overlay{position:fixed;inset:0;background:rgba(3,5,3,.78);backdrop-filter:blur(3px);z-index:80;display:none;align-items:center;justify-content:center;padding:18px}
+.overlay.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--line2);border-radius:14px;max-width:480px;width:100%;padding:26px;box-shadow:0 30px 80px rgba(0,0,0,.6);max-height:92dvh;overflow-y:auto}
+.modal.wide{max-width:760px}
+.modal h2{font-family:var(--disp);font-weight:800;font-size:22px;margin:0 0 6px}
+.modal p{color:var(--ink-dim);line-height:1.6;font-size:14px}
+.modal .x{float:right;background:none;border:none;color:var(--ink-dim);font-size:22px;min-width:40px}
+.modal .err{display:none;background:#2a0f08;border:1px solid #6e2415;color:#ffb4a3;border-radius:8px;padding:10px 12px;font-size:13px;margin-top:12px;line-height:1.5}
+.modal .err.show{display:block}
+.modal .note{display:none;background:rgba(255,176,46,.08);border:1px solid #7a5a17;color:#ffd58a;border-radius:8px;padding:10px 12px;font-size:13px;margin-top:12px;line-height:1.5}
+.modal .note.show{display:block}
+.tabs{display:flex;gap:8px;margin:14px 0 10px;flex-wrap:wrap}
+.tab{border:1px solid var(--line2);background:var(--panel2);color:var(--ink-dim);border-radius:7px;padding:0 16px;font-family:var(--mono);font-size:13px}
+.tab.active{color:#06130a;background:var(--green);border-color:var(--green);font-weight:600}
+pre.codebox{background:#050705;border:1px solid var(--line);border-radius:9px;padding:14px;overflow:auto;font-family:var(--mono);font-size:12px;line-height:1.6;max-height:46dvh;white-space:pre;color:#cfe8c2}
+
+/* ============ PEEKERS ============ */
+.peeker{position:fixed;z-index:40;pointer-events:none;visibility:hidden;transition:transform .55s cubic-bezier(.34,1.35,.64,1),opacity .4s,visibility 0s .6s}
+.peeker.show{visibility:visible;transition:transform .55s cubic-bezier(.34,1.35,.64,1),opacity .4s}
+.peeker .avatar .head{animation:none}
+#peekRight{right:0;top:38%;width:92px;transform:translateX(78%) rotate(90deg);transform-origin:center}
+#peekRight.show{transform:translateX(28%) rotate(90deg)}
+#peekCorner{left:10px;bottom:0;width:104px;transform:translateY(82%)}
+#peekCorner.show{transform:translateY(24%)}
+/* V (Guy Fawkes) peekers — same interval system, his own edges */
+#peekVLeft{left:0;top:54%;width:88px;transform:translateX(-80%) rotate(-90deg);transform-origin:center}
+#peekVLeft.show{transform:translateX(-28%) rotate(-90deg)}
+#peekVCorner{right:10px;bottom:0;width:100px;transform:translateY(82%)}
+#peekVCorner.show{transform:translateY(24%)}
+#peekVLeft .peek-bubble,#peekVCorner .peek-bubble{border-color:#7a2e22;color:#ffb4a3}
+.peek-bubble{position:absolute;font-family:var(--mono);font-size:11px;background:var(--panel2);border:1px solid var(--green-deep);color:var(--green);border-radius:8px;padding:6px 9px;white-space:nowrap;opacity:0;transition:opacity .3s}
+.peeker.show .peek-bubble{opacity:1}
+#peekRight .peek-bubble{right:70px;top:6px;transform:rotate(-90deg)}
+#peekCorner .peek-bubble{left:76px;bottom:64px}
+#peekVLeft .peek-bubble{left:66px;top:6px;transform:rotate(90deg)}
+#peekVCorner .peek-bubble{right:74px;bottom:64px}
+
+@media (max-width:760px){
+  .model-box select{max-width:200px}
+  .brand .tag{display:none}
+  #chatLog{padding:16px 12px}
+  .composer{padding:10px 12px}
+  #peekRight,#peekVLeft{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .avatar .head,.avatar .eyelids,.avatar .halo,.typing i{animation:none!important}
+  .peeker{display:none!important}
+}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+
+<!-- ================= STARTUP SCREEN ================= -->
+<section id="startup" aria-label="Startup screen">
+  <div class="grid-bg"></div>
+  <div class="inner">
+    <div class="start-avatar" id="startAvatar"></div>
+    <span class="stamp">OPSEC LEVEL: BIBISI — CERTIFIED</span>
+    <h1><span class="thin">Groq-powered</span>LLM Playground</h1>
+    <p class="lede">A fast, hands-on chat lab for Groq models. Paste <b>your own Groq API key</b>, pick a model, and chat — temperature, tokens, prompt analysis and usage stats live in one tidy Settings panel, not all over the screen.</p>
+    <div class="start-btns">
+      <button class="btn primary" id="startWithKey" style="min-height:50px;padding:0 26px;font-size:15px">🔑 &nbsp;Enter Groq API key</button>
+      <button class="btn" id="startBrowse" style="min-height:50px;padding:0 22px">Look around first →</button>
+    </div>
+    <div class="start-meta">
+      <span class="ok">✓</span> No key is hard-coded — you bring your own<br>
+      <span class="ok">✓</span> Your key is sent nowhere except Groq<br>
+      <span class="ok">✓</span> Get a free key at console.groq.com/keys
+    </div>
+  </div>
+</section>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <h1>LLM Playground</h1>
+      <span class="tag">OPSEC: BIBISI</span>
+    </div>
+    <div class="model-box">
+      <select id="modelSelect" aria-label="Model">
+        <option value="llama-3.3-70b-versatile" selected>llama-3.3-70b-versatile</option>
+        <option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option>
+        <option value="openai/gpt-oss-120b">openai/gpt-oss-120b · reasoning · web search</option>
+        <option value="openai/gpt-oss-20b">openai/gpt-oss-20b · reasoning · web search</option>
+        <option value="qwen/qwen3-32b">qwen/qwen3-32b · reasoning</option>
+      </select>
+    </div>
+    <div class="top-actions">
+      <span class="live-badge off" id="liveBadge"><span class="dot"></span><span id="liveText">NO KEY — add one to go live</span></span>
+      <button class="btn small" id="settingsBtn">⚙ Settings &amp; stats</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div id="chatLog" aria-live="polite">
+      <div class="empty-state" id="emptyState">
+        <b>Nothing here yet 👀</b>
+        Type a prompt below and press Enter. The model remembers the conversation as you go. Your key, temperature, tokens and stats live under <b style="display:inline;font-size:inherit">⚙ Settings &amp; stats</b>, top right.
+      </div>
+    </div>
+    <div class="composer">
+      <div class="composer-box">
+        <textarea id="promptInput" aria-label="Prompt">Classify the sentiment of each review.
+
+Input: The battery lasts all day, love it.
+Output: positive
+
+Input: Screen cracked after one week.
+Output: negative
+
+Input: Delivery was late but the product itself is great.
+Output:</textarea>
+        <div class="composer-foot">
+          <span class="kbd-hint">Enter to submit · Shift+Enter for a new line · Esc to stop</span>
+          <button class="btn primary" id="submitBtn">Submit</button>
+        </div>
+      </div>
+      <div class="stats-line" id="statsLine">
+        <span id="statsLineText">No replies yet — speed &amp; token stats will show up here.</span>
+        <button id="statsLineBtn" type="button">Full stats in Settings →</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ================= SETTINGS DRAWER ================= -->
+<div id="scrim"></div>
+<aside id="drawer" aria-label="Settings and stats">
+  <div class="drawer-head">
+    <h2>Settings &amp; stats</h2>
+    <button class="x" id="drawerClose" aria-label="Close settings">×</button>
+  </div>
+  <p style="color:var(--ink-faint);font-size:12.5px;line-height:1.6;margin:0">All the playground controls in one place. Close this and the chat stays clean.</p>
+
+  <h3>Groq API key</h3>
+  <div class="field">
+    <label class="flabel" for="apiKeyInput">Your key</label>
+    <input type="password" id="apiKeyInput" placeholder="gsk_…" autocomplete="off" spellcheck="false">
+    <div class="key-status idle" id="keyStatus">No key yet — chat is locked until you add one.</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn small green" id="testKeyBtn">Test &amp; save key</button>
+      <button class="btn small" id="clearKeyBtn">Clear key</button>
+    </div>
+    <label class="checkline"><input type="checkbox" id="rememberKey"> Remember key in this tab (gone when the tab closes)</label>
+    <p class="hint">Paste works the moment you type — no need to click away first. Your key stays in this browser and is sent nowhere except Groq. Get a free key at <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a>.</p>
+    <p class="hint" id="modelNote">Model list: built-in fallback — add a key and press “Test &amp; save” to load the live list from Groq.</p>
+  </div>
+
+  <h3>Generation</h3>
+  <div class="field">
+    <label class="flabel" for="tempRange">Temperature</label>
+    <div class="slider-row">
+      <input type="range" id="tempRange" min="0" max="2" step="0.1" value="0.7">
+      <input type="number" id="tempNum" min="0" max="2" step="0.1" value="0.7">
+    </div>
+    <p class="hint">Lower = focused and repeatable. Higher = more random and creative.</p>
+  </div>
+
+  <div class="field">
+    <label class="flabel" for="maxRange">Max tokens</label>
+    <div class="slider-row">
+      <input type="range" id="maxRange" min="16" max="4096" step="4" value="300">
+      <input type="number" id="maxNum" min="16" max="4096" step="16" value="300">
+    </div>
+    <p class="hint">Free-tier accounts are capped on tokens per minute, so keep this small while exploring. On reasoning models this budget <b>includes</b> the thinking tokens — set it too low and you get thinking but no answer.</p>
+  </div>
+
+  <div class="field">
+    <label class="flabel" for="stopInput">Stop sequences</label>
+    <input type="text" id="stopInput" placeholder="e.g. Input:, ###">
+    <p class="hint">Comma separated, at most 4. Only sent when not empty. The model stops as soon as it generates one of these.</p>
+  </div>
+
+  <div class="field">
+    <div class="toggle-row">
+      <span class="switch"><input type="checkbox" id="webSearchToggle" disabled aria-label="Web search"></span>
+      <label for="webSearchToggle" style="font-weight:600">Web search</label>
+    </div>
+    <p class="hint warn" id="webSearchNote">This model has no web search (GPT-OSS models only).</p>
+    <p class="hint">Costs extra input tokens and extra seconds before the model writes a single word.</p>
+  </div>
+
+  <div class="field">
+    <div class="toggle-row">
+      <span class="switch"><input type="checkbox" id="reasoningToggle" disabled aria-label="Reasoning"></span>
+      <label for="reasoningToggle" style="font-weight:600">Reasoning</label>
+    </div>
+    <p class="hint warn" id="reasoningNote">This model has no reasoning mode.</p>
+    <p class="hint">Reasoning models spend tokens thinking before they answer — you pay for tokens you never see, and they count against your tokens-per-minute quota. Leave this off while you explore.</p>
+  </div>
+
+  <button class="btn block" id="resetBtn">Reset conversation</button>
+  <p class="hint" style="margin-top:10px;font-size:12px;color:var(--ink-faint);line-height:1.55">Clears the chat. Settings and your key stay as they are.</p>
+  <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+    <button class="btn small" id="viewCodeBtn">View code</button>
+    <button class="btn small" id="copyChatBtn">Copy chat</button>
+  </div>
+
+  <h3>Prompt analysis</h3>
+  <div class="card">
+    <p class="sub">Analysing the prompt box (updates as you type). Example count = the largest count from any single rule (rules overlap, so they are never added up).</p>
+    <span class="verdict plain" id="verdictBadge">ZERO-SHOT</span>
+    <div id="rulesList" style="margin-top:10px"></div>
+  </div>
+
+  <h3>Speed (last reply)</h3>
+  <div class="card">
+    <div class="stat-grid">
+      <div><div class="num" id="statFirst">–</div><div class="lab">ms to first<br>answer token</div></div>
+      <div><div class="num" id="statTotal">–</div><div class="lab">seconds<br>total</div></div>
+      <div><div class="num" id="statTps">–</div><div class="lab">tokens /<br>second</div></div>
+    </div>
+    <p class="sub" style="margin:10px 0 0">Web search and thinking both delay the first token — that is what they cost you in time.</p>
+  </div>
+
+  <h3>Token usage</h3>
+  <div class="card">
+    <div class="usage-rows">
+      <div class="row"><span>Input tokens</span><b id="useIn">–</b></div>
+      <div class="row"><span>Reasoning tokens</span><b id="useReason">–</b></div>
+      <div class="row"><span>Output tokens</span><b id="useOut">–</b></div>
+      <div class="row"><span>Total (last reply)</span><b id="useTotal">–</b></div>
+      <div class="row"><span>Session total</span><b id="useSession">0</b></div>
+      <div class="row"><span>Tokens left this minute*</span><b id="useLeft">–</b></div>
+    </div>
+    <div class="meter"><i id="tpmMeter"></i></div>
+    <p class="sub" style="margin:10px 0 0">Input grows every turn because the whole conversation is re-sent. *Estimate vs a ~6,000 tokens/min free-tier budget, based on this tab's usage in the last 60 seconds.</p>
+  </div>
+</aside>
+
+<!-- ================= API KEY DIALOG ================= -->
+<div class="overlay" id="keyDialog" role="dialog" aria-modal="true" aria-labelledby="keyDialogTitle">
+  <div class="modal">
+    <button class="x" id="keyDialogClose" aria-label="Close">×</button>
+    <div id="dialogAvatar" style="width:74px;margin-bottom:8px"></div>
+    <h2 id="keyDialogTitle">Paste your Groq API key</h2>
+    <p>This playground talks <b>directly from your browser to Groq</b> — there is no server in between and no key is built into this page. Paste yours below to start chatting.</p>
+    <label for="dialogKeyInput" style="font-weight:600;display:block;margin:14px 0 7px">Groq API key</label>
+    <input type="password" id="dialogKeyInput" placeholder="gsk_…" autocomplete="off" spellcheck="false">
+    <label class="checkline"><input type="checkbox" id="dialogRemember"> Remember key in this tab (clears when the tab closes)</label>
+    <div class="err" id="dialogErr"></div>
+    <div class="note" id="dialogNote"></div>
+    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+      <button class="btn green" id="dialogConnect" style="flex:1;justify-content:center;min-height:48px">Connect &amp; start chatting</button>
+      <button class="btn" id="dialogSkip" style="min-height:48px">Skip for now</button>
+    </div>
+    <p style="font-size:12.5px;margin-top:14px">No key yet? Create a free one at <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a> — it starts with <span style="font-family:var(--mono)">gsk_</span>. Your key is sent nowhere except Groq.</p>
+  </div>
+</div>
+
+<!-- ================= VIEW CODE MODAL ================= -->
+<div class="overlay" id="codeModal" role="dialog" aria-modal="true" aria-labelledby="codeTitle">
+  <div class="modal wide">
+    <button class="x" id="codeClose" aria-label="Close">×</button>
+    <h2 id="codeTitle">View code</h2>
+    <p>Code that reproduces the current prompt + settings against the Groq API. It uses a <span style="font-family:var(--mono)">YOUR_GROQ_API_KEY</span> placeholder — <b style="color:var(--amber)">never commit or share a real key in code.</b></p>
+    <div class="tabs">
+      <button class="tab active" id="tabHtml">HTML</button>
+      <button class="tab" id="tabJs">JavaScript (fetch)</button>
+      <button class="btn small" id="copyCodeBtn" style="margin-left:auto">Copy code</button>
+    </div>
+    <pre class="codebox" id="codeBox"></pre>
+  </div>
+</div>
+
+<!-- ================= PEEKERS ================= -->
+<div class="peeker" id="peekRight" aria-hidden="true"><span class="peek-bubble">psst… nice prompt 👀</span><div class="peek-slot"></div></div>
+<div class="peeker" id="peekCorner" aria-hidden="true"><span class="peek-bubble">bibisi is watching… respectfully</span><div class="peek-slot"></div></div>
+<div class="peeker" id="peekVLeft" aria-hidden="true"><span class="peek-bubble">V peeks too 👀</span><div class="peek-slot-v"></div></div>
+<div class="peeker" id="peekVCorner" aria-hidden="true"><span class="peek-bubble">remember, remember…</span><div class="peek-slot-v"></div></div>
+
+<script>
+/* ================= AVATAR SVG ================= */
+function avatarSVG(id){
+  return '<svg class="avatar" id="'+id+'" viewBox="0 0 120 104" width="100%" role="img" aria-label="BIBISI frog avatar">'+
+  '<ellipse class="halo" cx="60" cy="54" rx="52" ry="46" fill="rgba(126,217,87,.16)"/>'+
+  '<g class="head">'+
+  '<circle cx="38" cy="26" r="17" fill="#57b83e"/><circle cx="82" cy="26" r="17" fill="#57b83e"/>'+
+  '<path d="M14 58 Q14 30 60 30 Q106 30 106 58 Q106 96 60 96 Q14 96 14 58Z" fill="#63c24a"/>'+
+  '<path d="M14 58 Q14 30 60 30 Q106 30 106 58 L106 64 Q60 50 14 64Z" fill="#0c0f0c" opacity=".92"/>'+
+  '<text x="60" y="52" text-anchor="middle" font-family="Archivo,sans-serif" font-weight="900" font-size="17" fill="#7ed957">V</text>'+
+  '<g class="eyelids"><circle cx="38" cy="26" r="11.5" fill="#fff"/><circle cx="82" cy="26" r="11.5" fill="#fff"/>'+
+  '<g class="pupils"><circle cx="38" cy="28" r="5.4" fill="#101408"/><circle cx="82" cy="28" r="5.4" fill="#101408"/>'+
+  '<circle cx="39.8" cy="26.2" r="1.7" fill="#fff"/><circle cx="83.8" cy="26.2" r="1.7" fill="#fff"/></g></g>'+
+  '<g class="mouth-still"><path d="M42 76 Q60 86 78 76" stroke="#17300f" stroke-width="3.6" fill="none" stroke-linecap="round"/></g>'+
+  '<g class="mouth-talk"><ellipse cx="60" cy="80" rx="9" ry="5.4" fill="#17300f"/></g>'+
+  '</g></svg>';
+}
+/* V — Guy Fawkes mask avatar, Pepe's peeking partner */
+function vAvatarSVG(id){
+  return '<svg class="avatar v-avatar" id="'+id+'" viewBox="0 0 120 104" width="100%" role="img" aria-label="V mask avatar">'+
+  '<ellipse class="halo" cx="60" cy="56" rx="50" ry="44" fill="rgba(255,75,46,.13)"/>'+
+  '<g class="head">'+
+  '<path d="M40 20 L48 3 L72 3 L80 20 Q60 26 40 20Z" fill="#141814"/>'+
+  '<ellipse cx="60" cy="21" rx="51" ry="8" fill="#0c0f0c"/>'+
+  '<path d="M29 40 Q29 24 60 24 Q91 24 91 40 Q91 76 60 95 Q29 76 29 40Z" fill="#f2ead8" stroke="#cfc0a0" stroke-width="1.5"/>'+
+  '<path d="M35 43 Q43 37 51 42" stroke="#141414" stroke-width="2.6" fill="none" stroke-linecap="round"/>'+
+  '<path d="M69 42 Q77 37 85 43" stroke="#141414" stroke-width="2.6" fill="none" stroke-linecap="round"/>'+
+  '<g class="eyelids"><ellipse cx="43" cy="50" rx="7" ry="5.6" fill="#fff"/><ellipse cx="77" cy="50" rx="7" ry="5.6" fill="#fff"/>'+
+  '<g class="pupils"><circle cx="43" cy="51" r="3.2" fill="#141414"/><circle cx="77" cy="51" r="3.2" fill="#141414"/>'+
+  '<circle cx="44.2" cy="49.8" r="1" fill="#fff"/><circle cx="78.2" cy="49.8" r="1" fill="#fff"/></g></g>'+
+  '<circle cx="37" cy="65" r="6" fill="#e8a598" opacity=".5"/><circle cx="83" cy="65" r="6" fill="#e8a598" opacity=".5"/>'+
+  '<path d="M60 69 Q47 60 34 67 Q45 76 60 73 Q75 76 86 67 Q73 60 60 69Z" fill="#141414"/>'+
+  '<g class="mouth-still"><path d="M49 79 Q60 84 71 79" stroke="#7a2e22" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>'+
+  '<g class="mouth-talk"><ellipse cx="60" cy="81" rx="7" ry="4.2" fill="#7a2e22"/></g>'+
+  '<path d="M54 87 L60 100 L66 87 Q60 91 54 87Z" fill="#141414"/>'+
+  '</g></svg>';
+}
+document.getElementById('startAvatar').innerHTML = avatarSVG('avStart') + '<div class="shadow"></div>';
+document.getElementById('dialogAvatar').innerHTML = avatarSVG('avDialog');
+document.querySelectorAll('.peek-slot').forEach(function(s,i){ s.innerHTML = avatarSVG('avPeek'+i); });
+document.querySelectorAll('.peek-slot-v').forEach(function(s,i){ s.innerHTML = vAvatarSVG('avPeekV'+i); });
+
+function setAvatarState(state){
+  document.querySelectorAll('.avatar').forEach(function(a){
+    a.classList.toggle('speaking', state==='speaking');
+    a.classList.toggle('thinking', state==='thinking');
+  });
+}
+document.addEventListener('mousemove', function(e){
+  var dx = (e.clientX / window.innerWidth - .5) * 5, dy = (e.clientY / window.innerHeight - .5) * 3;
+  document.querySelectorAll('.avatar .pupils').forEach(function(p){ p.style.transform = 'translate('+dx+'px,'+dy+'px)'; });
+});
+
+/* ================= PEEKING ================= */
+var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var peekers = [
+  {el: document.getElementById('peekRight'), lines:['psst… nice prompt 👀','still anonymous. good.','that key never leaves this tab ✓']},
+  {el: document.getElementById('peekCorner'), lines:['bibisi is watching… respectfully','OPSEC LEVEL: BIBISI','no key hard-coded here. ever.']},
+  {el: document.getElementById('peekVLeft'), lines:['V peeks too 👀','beneath this mask… is a peek','no key leaves this tab. agreed.']},
+  {el: document.getElementById('peekVCorner'), lines:['remember, remember…','V was here. briefly.','vendetta? no — just peeking.']}
+];
+function doPeek(){
+  if(reduced || document.hidden) return;
+  if(!document.getElementById('startup').classList.contains('gone')) return;
+  if(document.getElementById('drawer').classList.contains('open')) { schedulePeek(); return; }
+  var p = peekers[Math.floor(Math.random()*peekers.length)];
+  p.el.querySelector('.peek-bubble').textContent = p.lines[Math.floor(Math.random()*p.lines.length)];
+  p.el.classList.add('show');
+  setTimeout(function(){ p.el.classList.remove('show'); }, 3400);
+  schedulePeek();
+}
+function schedulePeek(){ setTimeout(doPeek, 15000 + Math.random()*14000); }
+setTimeout(schedulePeek, 4000);
+
+/* ================= STATE ================= */
+var MODELS_META = {
+  'llama-3.3-70b-versatile': {reasoning:false, search:false},
+  'llama-3.1-8b-instant': {reasoning:false, search:false},
+  'openai/gpt-oss-120b': {reasoning:true, search:true},
+  'openai/gpt-oss-20b': {reasoning:true, search:true},
+  'qwen/qwen3-32b': {reasoning:true, search:false}
+};
+var state = {
+  apiKey: '',
+  keyVerified: false,     /* true once Groq has accepted this exact key */
+  messages: [],
+  streaming: false,
+  abort: null,
+  sessionTokens: 0,
+  usageLog: []
+};
+var TPM_BUDGET = 6000;
+var GROQ_BASE = 'https://api.groq.com/openai/v1';
+
+var $ = function(id){ return document.getElementById(id); };
+var els = {
+  startup:$('startup'), app:$('app'), model:$('modelSelect'), modelNote:$('modelNote'),
+  key:$('apiKeyInput'), remember:$('rememberKey'), keyStatus:$('keyStatus'),
+  tempR:$('tempRange'), tempN:$('tempNum'), maxR:$('maxRange'), maxN:$('maxNum'),
+  stop:$('stopInput'), web:$('webSearchToggle'), webNote:$('webSearchNote'),
+  reas:$('reasoningToggle'), reasNote:$('reasoningNote'),
+  log:$('chatLog'), empty:$('emptyState'), prompt:$('promptInput'), submit:$('submitBtn'),
+  badge:$('liveBadge'), liveText:$('liveText'),
+  dialog:$('keyDialog'), dKey:$('dialogKeyInput'), dRem:$('dialogRemember'), dErr:$('dialogErr'), dNote:$('dialogNote'),
+  drawer:$('drawer'), scrim:$('scrim')
+};
+
+/* ================= KEY HANDLING =================
+   The old build only read the panel key field on 'change' (fires on blur)
+   and hard-blocked the dialog whenever its one-off validation fetch
+   failed for ANY reason — including a plain network hiccup. Both are
+   fixed here: the key is cleaned + picked up live as you type/paste,
+   submit re-reads the fields, and only a real 401 from Groq counts as
+   "bad key". A network failure saves the key with a warning instead of
+   trapping the user in the dialog. */
+function cleanKey(v){
+  if(!v) return '';
+  var k = String(v).trim();
+  k = k.replace(/^["']+|["']+$/g, '');          /* stray quotes from a sloppy copy */
+  k = k.replace(/^bearer\s+/i, '');              /* pasted "Bearer gsk_…" */
+  k = k.replace(/\s+/g, '');                     /* spaces / newlines inside the paste */
+  return k;
+}
+function maskKey(k){ return k.length > 10 ? k.slice(0,7) + '…' + k.slice(-3) : '•••'; }
+
+function persistKey(){
+  try{
+    if(els.remember.checked && state.apiKey) sessionStorage.setItem('bibisi_groq_key', state.apiKey);
+    else sessionStorage.removeItem('bibisi_groq_key');
+  }catch(e){ /* storage unavailable in this context — key still works for the session */ }
+}
+function setKeyUI(){
+  if(state.apiKey && state.keyVerified){
+    els.badge.className = 'live-badge';
+    els.liveText.textContent = 'LIVE — real API calls';
+    els.keyStatus.textContent = '✓ Key verified by Groq (' + maskKey(state.apiKey) + ') — chat is live.';
+    els.keyStatus.className = 'key-status ok';
+  } else if(state.apiKey){
+    els.badge.className = 'live-badge warn';
+    els.liveText.textContent = 'KEY SAVED — not verified yet';
+    els.keyStatus.textContent = 'Key saved (' + maskKey(state.apiKey) + ') but not verified with Groq yet — press “Test & save key”, or just send a message and it will be checked then.';
+    els.keyStatus.className = 'key-status warn';
+  } else {
+    els.badge.className = 'live-badge off';
+    els.liveText.textContent = 'NO KEY — add one to go live';
+    els.keyStatus.textContent = 'No key yet — chat is locked until you add one.';
+    els.keyStatus.className = 'key-status idle';
+  }
+}
+function applyKey(raw, remember){
+  state.apiKey = cleanKey(raw);
+  state.keyVerified = false;
+  if(els.key.value !== state.apiKey) els.key.value = state.apiKey;
+  if(typeof remember === 'boolean') els.remember.checked = remember;
+  persistKey();
+  setKeyUI();
+  return state.apiKey;
+}
+/* Live pickup: typing or pasting in either key field updates state at once. */
+els.key.addEventListener('input', function(){ applyKey(els.key.value); });
+els.key.addEventListener('change', function(){ applyKey(els.key.value); });
+els.dKey.addEventListener('input', function(){
+  els.dErr.classList.remove('show'); els.dNote.classList.remove('show');
+});
+els.remember.addEventListener('change', persistKey);
+$('clearKeyBtn').addEventListener('click', function(){
+  state.apiKey = ''; state.keyVerified = false;
+  els.key.value = ''; els.remember.checked = false;
+  persistKey(); setKeyUI();
+});
+
+/* One validation path used by the dialog, the panel button and submit.
+   Returns 'ok' | 'invalid' | 'network' | 'http'. Never throws. */
+async function validateKey(key){
+  try{
+    var res = await fetch(GROQ_BASE + '/models', {headers:{'Authorization':'Bearer ' + key}});
+    if(res.status === 401 || res.status === 403) return {result:'invalid', status:res.status};
+    if(!res.ok) return {result:'http', status:res.status};
+    var data = null;
+    try{ data = await res.json(); }catch(e){}
+    return {result:'ok', models:data};
+  }catch(e){
+    return {result:'network'};
+  }
+}
+function fillModelList(data){
+  var ids = ((data && data.data) || []).map(function(m){ return m.id; }).filter(function(id){ return !/whisper|tts|guard|playai/i.test(id); });
+  if(!ids.length) return false;
+  var current = els.model.value;
+  els.model.innerHTML = '';
+  ids.sort().forEach(function(id){
+    var o = document.createElement('option'); o.value = id; o.textContent = id;
+    var meta = MODELS_META[id];
+    if(meta && (meta.reasoning || meta.search)) o.textContent = id + (meta.reasoning ? ' · reasoning' : '') + (meta.search ? ' · web search' : '');
+    els.model.appendChild(o);
+  });
+  if(ids.indexOf(current) > -1) els.model.value = current;
+  else if(ids.indexOf('llama-3.3-70b-versatile') > -1) els.model.value = 'llama-3.3-70b-versatile';
+  els.modelNote.textContent = 'Model list: live from Groq — ' + ids.length + ' chat models loaded.';
+  refreshToggles();
+  return true;
+}
+async function testAndSaveKey(key, remember){
+  var v = await validateKey(key);
+  if(v.result === 'ok'){
+    applyKey(key, remember);
+    state.keyVerified = true;
+    if(!fillModelList(v.models)) els.modelNote.textContent = 'Model list: key works, but Groq returned no chat models — built-in fallback list kept.';
+    setKeyUI();
+  } else if(v.result === 'network' || v.result === 'http'){
+    /* Do NOT trap the user: save the key, warn, verify on first message. */
+    applyKey(key, remember);
+    els.keyStatus.textContent = '⚠ Could not reach Groq to verify just now (' + (v.result === 'http' ? 'HTTP ' + v.status : 'network error') + '). Key is saved anyway — it will be checked on your first message.';
+    els.keyStatus.className = 'key-status warn';
+  }
+  return v;
+}
+$('testKeyBtn').addEventListener('click', async function(){
+  var k = cleanKey(els.key.value);
+  if(!k){ els.keyStatus.textContent = 'Paste a key first — it starts with gsk_ and is free at console.groq.com/keys.'; els.keyStatus.className = 'key-status bad'; return; }
+  var btn = this; btn.disabled = true; btn.textContent = 'Testing with Groq…';
+  var v = await testAndSaveKey(k);
+  if(v.result === 'invalid'){
+    state.keyVerified = false; setKeyUI();
+    els.keyStatus.textContent = '✗ Groq rejected this key (' + v.status + '). Keys start with gsk_ — create a fresh one at console.groq.com/keys and paste the whole thing.';
+    els.keyStatus.className = 'key-status bad';
+  }
+  btn.disabled = false; btn.textContent = 'Test & save key';
+});
+
+/* restore a tab-remembered key (session only, as before) */
+try{
+  var saved = sessionStorage.getItem('bibisi_groq_key');
+  if(saved){ els.remember.checked = true; applyKey(saved, true); }
+}catch(e){}
+setKeyUI();
+
+/* ================= DRAWER ================= */
+function openDrawer(){ els.drawer.classList.add('open'); els.scrim.classList.add('on'); }
+function closeDrawer(){ els.drawer.classList.remove('open'); els.scrim.classList.remove('on'); }
+$('settingsBtn').addEventListener('click', openDrawer);
+$('statsLineBtn').addEventListener('click', openDrawer);
+$('drawerClose').addEventListener('click', closeDrawer);
+els.scrim.addEventListener('click', closeDrawer);
+
+/* ================= MODEL / TOGGLES ================= */
+function modelMeta(){
+  var m = els.model.value;
+  if(MODELS_META[m]) return MODELS_META[m];
+  return {reasoning:/oss|qwen|reason|think/i.test(m), search:/oss/i.test(m)};
+}
+function refreshToggles(){
+  var meta = modelMeta();
+  els.web.disabled = !meta.search;
+  if(!meta.search){ els.web.checked = false; els.webNote.textContent = 'This model has no web search (GPT-OSS models only).'; }
+  else { els.webNote.textContent = 'Web search is available on this model — Groq handles it server-side and it counts toward your token budget.'; }
+  els.reas.disabled = !meta.reasoning;
+  if(!meta.reasoning){ els.reas.checked = false; els.reasNote.textContent = 'This model has no reasoning mode.'; }
+  else { els.reasNote.textContent = 'Reasoning is available on this model. It spends extra (hidden) tokens thinking before answering.'; }
+}
+els.model.addEventListener('change', refreshToggles);
+refreshToggles();
+
+function syncPair(r, n){ r.addEventListener('input', function(){ n.value = r.value; }); n.addEventListener('change', function(){ r.value = n.value; }); }
+syncPair(els.tempR, els.tempN); syncPair(els.maxR, els.maxN);
+
+/* ================= STARTUP + DIALOG ================= */
+function enterApp(){
+  els.startup.classList.add('gone');
+  els.app.classList.add('on');
+  els.prompt.focus();
+}
+function openKeyDialog(){
+  els.dErr.classList.remove('show'); els.dNote.classList.remove('show');
+  els.dKey.value = state.apiKey || '';
+  els.dialog.classList.add('open');
+  setTimeout(function(){ els.dKey.focus(); els.dKey.select(); }, 60);
+}
+function closeKeyDialog(){ els.dialog.classList.remove('open'); }
+$('startWithKey').addEventListener('click', openKeyDialog);
+$('startBrowse').addEventListener('click', enterApp);
+$('keyDialogClose').addEventListener('click', function(){ closeKeyDialog(); if(!els.app.classList.contains('on')) enterApp(); });
+$('dialogSkip').addEventListener('click', function(){ closeKeyDialog(); enterApp(); });
+$('dialogConnect').addEventListener('click', async function(){
+  var k = cleanKey(els.dKey.value);
+  els.dErr.classList.remove('show'); els.dNote.classList.remove('show');
+  if(!k){
+    els.dErr.textContent = 'Paste a key first — it starts with gsk_ and is free to create at console.groq.com/keys.';
+    els.dErr.classList.add('show'); return;
+  }
+  var btn = this; btn.disabled = true; btn.textContent = 'Checking key with Groq…';
+  var v = await testAndSaveKey(k, els.dRem.checked);
+  btn.disabled = false; btn.textContent = 'Connect & start chatting';
+  if(v.result === 'invalid'){
+    els.dErr.textContent = 'Groq rejected that key (' + v.status + ' Unauthorized). Create a fresh key at console.groq.com/keys and paste the whole key — it starts with "gsk_".';
+    els.dErr.classList.add('show'); return;
+  }
+  if(v.result === 'network' || v.result === 'http'){
+    /* Key saved, app opens — the note explains it will be verified on send. */
+    els.dNote.textContent = 'Could not verify with Groq just now (' + (v.result === 'http' ? 'HTTP ' + v.status : 'network error') + ') — your key is saved and you are in. It will be checked on your first message.';
+    els.dNote.classList.add('show');
+    setTimeout(function(){ closeKeyDialog(); enterApp(); }, 1600);
+    return;
+  }
+  closeKeyDialog(); enterApp();
+});
+els.dKey.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); $('dialogConnect').click(); } });
+
+/* ================= CHAT RENDERING ================= */
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function renderText(s){
+  var parts = s.split(/```/);
+  var out = '';
+  parts.forEach(function(p, i){
+    if(i % 2 === 1){
+      var nl = p.indexOf('\n'); var code = nl > -1 ? p.slice(nl+1) : p;
+      out += '<pre><code>' + esc(code.replace(/\n$/,'')) + '</code></pre>';
+    } else {
+      out += esc(p).replace(/`([^`\n]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+    }
+  });
+  return out;
+}
+function addMessage(role, content, isError){
+  if(els.empty) els.empty.style.display = 'none';
+  var row = document.createElement('div');
+  row.className = 'msg ' + role + (isError ? ' error' : '');
+  if(role === 'assistant'){
+    var av = document.createElement('div'); av.className = 'mini-av'; av.innerHTML = avatarSVG('avMsg' + Date.now() + Math.random().toString(36).slice(2,6));
+    row.appendChild(av);
+  }
+  var b = document.createElement('div'); b.className = 'bubble'; b.innerHTML = renderText(content);
+  row.appendChild(b);
+  els.log.appendChild(row);
+  els.log.scrollTop = els.log.scrollHeight;
+  return b;
+}
+
+/* ================= PROMPT ANALYSIS ================= */
+function analyse(text){
+  var lines = text.split('\n');
+  var ioPairs = [], ioEmpty = 0, qaPairs = 0, qaEmpty = 0, arrows = 0, quoted = 0, blocks = 0;
+  var pendingIO = false, pendingQA = false;
+  lines.forEach(function(l){
+    var t = l.trim();
+    if(/^input\s*:/i.test(t)) pendingIO = true;
+    else if(/^output\s*:/i.test(t)){
+      var v = t.replace(/^output\s*:/i,'').trim();
+      if(pendingIO){ if(v) ioPairs.push(v); else ioEmpty++; pendingIO = false; }
+    }
+    if(/^(q|question)\s*:/i.test(t)) pendingQA = true;
+    else if(/^(a|answer)\s*:/i.test(t)){
+      var v2 = t.replace(/^(a|answer)\s*:/i,'').trim();
+      if(pendingQA){ if(v2) qaPairs++; else qaEmpty++; pendingQA = false; }
+    }
+    if(/(->|=>)/.test(t) && t.split(/->|=>/)[0].trim() && t.split(/->|=>/)[1] && t.split(/->|=>/)[1].trim()) arrows++;
+    if(/["“][^"”]+["”]\s*(->|=>|:)\s*["“][^"”]+["”]/.test(t)) quoted++;
+    if(/^(###|---)\s*$/.test(t)) blocks++;
+  });
+  var blockPairs = blocks >= 2 ? Math.floor(blocks/2) : 0;
+  var cot = /(step by step|think step|chain of thought|let's think|reason step)/i.test(text);
+  var role = /(you are|act as|your role|as an expert|you're a)/i.test(text);
+  var neg = /(do not|don't|never|avoid|no more than|at most|must not)/i.test(text);
+  var fmt = /(respond (only|with)|output (only|in)|format:|in json|as a list|bullet|one word|exactly \d)/i.test(text);
+  var count = Math.max(ioPairs.length, qaPairs, arrows, quoted, blockPairs);
+  return {ioPairs:ioPairs, ioEmpty:ioEmpty, qaPairs:qaPairs, qaEmpty:qaEmpty, arrows:arrows, quoted:quoted, blockPairs:blockPairs, cot:cot, role:role, neg:neg, fmt:fmt, count:count};
+}
+function ruleRow(ok, label, foundHtml){
+  return '<div class="rule"><span class="mark '+(ok?'yes':'no')+'">'+(ok?'✓':'✗')+'</span> ' + label + (foundHtml ? ' — ' + foundHtml : '') + '</div>';
+}
+function renderAnalysis(){
+  var a = analyse(els.prompt.value);
+  var badge = $('verdictBadge');
+  if(a.count >= 2){ badge.textContent = 'FEW-SHOT (' + a.count + ')'; badge.className = 'verdict'; }
+  else if(a.count === 1){ badge.textContent = 'ONE-SHOT (1)'; badge.className = 'verdict'; }
+  else { badge.textContent = 'ZERO-SHOT'; badge.className = 'verdict plain'; }
+  var h = '';
+  h += ruleRow(a.ioPairs.length>0, 'Input: / Output: pairs with an answer: ' + a.ioPairs.length, a.ioPairs.length ? '<span class="found">' + a.ioPairs.map(function(v){return '“Output: '+esc(v)+'”';}).join(', ') + '</span>' : 'none found');
+  if(a.ioEmpty) h += '<div class="rule" style="border-top:none;padding-top:0">' + a.ioEmpty + ' empty Output: ignored — that is the question, not an example.</div>';
+  h += ruleRow(a.qaPairs>0, 'Q: / A: pairs with an answer: ' + (a.qaPairs||'none'), '');
+  if(a.qaEmpty) h += '<div class="rule" style="border-top:none;padding-top:0">' + a.qaEmpty + ' empty answer ignored — that is the question.</div>';
+  h += ruleRow(a.arrows>0, 'Lines with text on both sides of -&gt; or =&gt;: ' + (a.arrows||'none found'), '');
+  h += ruleRow(a.quoted>0, 'Quoted pairs like "x" -&gt; "y": ' + (a.quoted||'none found'), '');
+  h += ruleRow(a.blockPairs>0, 'Blocks separated by ### or ---: ' + (a.blockPairs||'none found'), '');
+  h += ruleRow(a.cot, 'Chain-of-Thought: ' + (a.cot?'detected':'not detected'), '');
+  h += ruleRow(a.role, 'Role prompting: ' + (a.role?'detected':'not detected'), '');
+  h += ruleRow(a.neg, 'Negative constraint: ' + (a.neg?'detected':'not detected'), '');
+  h += ruleRow(a.fmt, 'Format constraint: ' + (a.fmt?'detected':'not detected'), '');
+  $('rulesList').innerHTML = h;
+}
+els.prompt.addEventListener('input', renderAnalysis);
+renderAnalysis();
+
+/* ================= USAGE / SPEED ================= */
+function fmt(n){ return n==null ? '–' : Number(n).toLocaleString('en-IN'); }
+function updateUsage(u, reasoningTokens){
+  if(!u) return;
+  $('useIn').textContent = fmt(u.prompt_tokens);
+  $('useReason').textContent = fmt(reasoningTokens != null ? reasoningTokens : (u.completion_tokens_details ? u.completion_tokens_details.reasoning_tokens : 0));
+  $('useOut').textContent = fmt(u.completion_tokens);
+  $('useTotal').textContent = fmt(u.total_tokens);
+  state.sessionTokens += (u.total_tokens||0);
+  $('useSession').textContent = fmt(state.sessionTokens);
+  state.usageLog.push({t: Date.now(), total: u.total_tokens||0});
+  updateTPM();
+}
+function updateTPM(){
+  var cutoff = Date.now() - 60000;
+  state.usageLog = state.usageLog.filter(function(x){ return x.t > cutoff; });
+  var used = state.usageLog.reduce(function(s,x){ return s + x.total; }, 0);
+  var left = Math.max(0, TPM_BUDGET - used);
+  $('useLeft').textContent = fmt(left);
+  $('tpmMeter').style.width = Math.max(0, Math.min(100, left / TPM_BUDGET * 100)) + '%';
+}
+setInterval(updateTPM, 5000);
+function updateStatsLine(firstMs, totalSec, tps, totalTokens){
+  $('statsLineText').textContent = 'Last reply: ' + (firstMs!=null ? firstMs + ' ms to first token' : '—') + ' · ' + (totalSec!=null ? totalSec + 's total' : '—') + ' · ' + (tps!=null ? tps + ' tok/s' : '—') + ' · ' + (totalTokens!=null ? fmt(totalTokens) + ' tokens' : '—') + ' · session ' + fmt(state.sessionTokens) + ' tokens';
+}
+
+/* ================= SUBMIT / STREAM ================= */
+function stopStreaming(){ if(state.abort) state.abort.abort(); }
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    if(state.streaming) stopStreaming();
+    else if(els.drawer.classList.contains('open')) closeDrawer();
+  }
+});
+els.prompt.addEventListener('keydown', function(e){
+  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); submitPrompt(); }
+});
+els.submit.addEventListener('click', submitPrompt);
+
+/* Pull the key from wherever the user actually typed it — never trust
+   that a blur/'change' event fired first. */
+function currentKey(){
+  if(state.apiKey) return state.apiKey;
+  var fromPanel = cleanKey(els.key.value);
+  if(fromPanel) return applyKey(fromPanel);
+  var fromDialog = cleanKey(els.dKey.value);
+  if(fromDialog) return applyKey(fromDialog);
+  return '';
+}
+
+/* Non-streaming fallback: if the streaming request fails, errors out or
+   comes back empty, retry once as a plain request and render that reply.
+   It also sends max_completion_tokens instead of max_tokens — newer Groq
+   models (GPT-OSS, Qwen3) reject max_tokens outright, which was one way a
+   prompt could silently get no answer at all. */
+async function nonStreamFallback(bubble, t0){
+  var stops = els.stop.value.split(',').map(function(s){return s.trim();}).filter(Boolean).slice(0,4);
+  var body = {
+    model: els.model.value,
+    messages: state.messages.slice(),
+    temperature: parseFloat(els.tempN.value) || 0.7,
+    max_completion_tokens: parseInt(els.maxN.value, 10) || 300,
+    stream: false
+  };
+  if(stops.length) body.stop = stops;
+  var meta = modelMeta();
+  if(meta.reasoning && els.reas.checked && !els.reas.disabled && /oss/i.test(els.model.value)) body.reasoning_effort = 'medium';
+  var res = await fetch(GROQ_BASE + '/chat/completions', {
+    method:'POST',
+    headers:{'Authorization':'Bearer ' + state.apiKey, 'Content-Type':'application/json'},
+    body: JSON.stringify(body),
+    signal: state.abort ? state.abort.signal : undefined
+  });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  var data = await res.json();
+  var choice = data.choices && data.choices[0];
+  var content = '';
+  if(choice && choice.message){
+    var c = choice.message.content;
+    if(typeof c === 'string') content = c;
+    else if(Array.isArray(c)) content = c.map(function(p){ return (p && p.text) || ''; }).join('');
+  }
+  if(!content) return false;
+  if(!state.keyVerified){ state.keyVerified = true; setKeyUI(); }
+  setAvatarState('speaking');
+  bubble.innerHTML = renderText(content);
+  els.log.scrollTop = els.log.scrollHeight;
+  state.messages.push({role:'assistant', content:content});
+  var tEnd = performance.now();
+  if(data.usage){
+    updateUsage(data.usage, data.usage.completion_tokens_details ? data.usage.completion_tokens_details.reasoning_tokens : null);
+    var totalSec = ((tEnd - t0)/1000).toFixed(2);
+    var secs = (tEnd - t0)/1000;
+    var tps = data.usage.completion_tokens && secs > 0 ? Math.round(data.usage.completion_tokens / secs) : null;
+    $('statFirst').textContent = '–';
+    $('statTotal').textContent = totalSec;
+    $('statTps').textContent = tps != null ? tps : '–';
+    updateStatsLine(null, totalSec, tps, data.usage.total_tokens);
+  }
+  return true;
+}
+async function tryFallback(bubble, t0){
+  if(state.abort && state.abort.signal.aborted) return false;
+  try{ return await nonStreamFallback(bubble, t0); }catch(e){ return false; }
+}
+
+async function submitPrompt(){
+  if(state.streaming) return;
+  var text = els.prompt.value.trim();
+  if(!text){ els.prompt.focus(); return; }
+  if(!currentKey()){ openKeyDialog(); return; }
+
+  state.messages.push({role:'user', content:text});
+  addMessage('user', text);
+  els.prompt.value = ''; renderAnalysis();
+
+  var bubble = addMessage('assistant', '');
+  bubble.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
+  setAvatarState('thinking');
+  state.streaming = true; els.submit.disabled = true; els.submit.textContent = 'Streaming… (Esc to stop)';
+  state.abort = new AbortController();
+
+  var stops = els.stop.value.split(',').map(function(s){return s.trim();}).filter(Boolean).slice(0,4);
+  var body = {
+    model: els.model.value,
+    messages: state.messages.slice(),
+    temperature: parseFloat(els.tempN.value) || 0.7,
+    max_tokens: parseInt(els.maxN.value, 10) || 300,
+    stream: true,
+    stream_options: {include_usage: true}
+  };
+  if(stops.length) body.stop = stops;
+  var meta = modelMeta();
+  if(meta.reasoning && els.reas.checked && !els.reas.disabled && /oss/i.test(els.model.value)) body.reasoning_effort = 'medium';
+  /* Web search on Groq runs server-side on its search-enabled models; the toggle is
+     surfaced for GPT-OSS parity with the reference UI and explained in Settings. */
+
+  var t0 = performance.now(), tFirst = null, full = '', usage = null, reasoningTokens = null;
+  try{
+    var res = await fetch(GROQ_BASE + '/chat/completions', {
+      method:'POST',
+      headers:{'Authorization':'Bearer ' + state.apiKey, 'Content-Type':'application/json'},
+      body: JSON.stringify(body),
+      signal: state.abort.signal
+    });
+    if(!res.ok){
+      var errText = '';
+      try{ var ej = await res.json(); errText = (ej.error && ej.error.message) || ''; }catch(e){}
+      if(res.status === 401 || res.status === 403){
+        state.messages.pop();
+        state.keyVerified = false; setKeyUI();
+        bubble.parentElement.classList.add('error');
+        bubble.textContent = 'Groq rejected the API key (' + res.status + '). Open ⚙ Settings & stats to paste a fresh key — keys start with gsk_.';
+        els.prompt.value = text; renderAnalysis();
+        openKeyDialog();
+        return;
+      }
+      if(res.status === 429){
+        bubble.parentElement.classList.add('error');
+        bubble.textContent = 'Rate limited by Groq (429) — free-tier tokens-per-minute cap hit. Wait ~30 seconds, or lower Max tokens in Settings, then try again.' + (errText ? '\n\nGroq said: ' + errText : '');
+        state.messages.pop();
+        els.prompt.value = text; renderAnalysis();
+        return;
+      }
+      var fbHttp = await tryFallback(bubble, t0);
+      if(fbHttp) return;
+      throw new Error('Groq returned HTTP ' + res.status + (errText ? ' — ' + errText : ''));
+    }
+    /* A successful chat call proves the key works, whatever verification said. */
+    if(!state.keyVerified){ state.keyVerified = true; setKeyUI(); }
+    setAvatarState('speaking');
+    var reader = res.body.getReader();
+    var decoder = new TextDecoder();
+    var buf = '';
+    while(true){
+      var chunk = await reader.read();
+      if(chunk.done) break;
+      buf += decoder.decode(chunk.value, {stream:true});
+      var lines = buf.split('\n'); buf = lines.pop();
+      for(var i=0;i<lines.length;i++){
+        var line = lines[i].trim();
+        if(!line || line.indexOf('data:') !== 0) continue;
+        var payload = line.slice(5).trim();
+        if(payload === '[DONE]') continue;
+        try{
+          var j = JSON.parse(payload);
+          if(j.usage) usage = j.usage;
+          if(j.x_groq && j.x_groq.usage) usage = j.x_groq.usage;
+          var rawDelta = j.choices && j.choices[0] && j.choices[0].delta ? j.choices[0].delta.content : '';
+          var delta = '';
+          if(typeof rawDelta === 'string') delta = rawDelta;
+          else if(Array.isArray(rawDelta)) delta = rawDelta.map(function(p){ return (p && p.text) || ''; }).join('');
+          if(delta){
+            if(tFirst === null) tFirst = performance.now();
+            full += delta;
+            bubble.innerHTML = renderText(full);
+            els.log.scrollTop = els.log.scrollHeight;
+          }
+        }catch(e){ /* partial JSON line — wait for more */ }
+      }
+    }
+    if(!full){
+      var fbEmpty = await tryFallback(bubble, t0);
+      if(fbEmpty) return;
+      full = '(The model returned an empty reply — on reasoning models this usually means Max tokens was too low and the budget was spent thinking. Raise Max tokens in Settings and retry.)';
+    }
+    bubble.innerHTML = renderText(full);
+    state.messages.push({role:'assistant', content:full});
+    var tEnd = performance.now();
+    if(usage){
+      if(usage.completion_tokens_details && usage.completion_tokens_details.reasoning_tokens != null) reasoningTokens = usage.completion_tokens_details.reasoning_tokens;
+      updateUsage(usage, reasoningTokens);
+      var firstMs = tFirst ? Math.round(tFirst - t0) : null;
+      var totalSec = ((tEnd - t0)/1000).toFixed(2);
+      var secs = (tEnd - t0)/1000;
+      var tps = usage.completion_tokens && secs > 0 ? Math.round(usage.completion_tokens / secs) : null;
+      $('statFirst').textContent = firstMs!=null ? firstMs : '–';
+      $('statTotal').textContent = totalSec;
+      $('statTps').textContent = tps!=null ? tps : '–';
+      updateStatsLine(firstMs, totalSec, tps, usage.total_tokens);
+    }
+  }catch(err){
+    if(err.name === 'AbortError' || (state.abort && state.abort.signal.aborted)){
+      if(full){ bubble.innerHTML = renderText(full) + '\n\n— stopped by you (Esc) —'; state.messages.push({role:'assistant', content:full}); }
+      else { bubble.textContent = '— stopped —'; state.messages.pop(); }
+    } else {
+      var recovered = await tryFallback(bubble, t0);
+      if(!recovered){
+        bubble.parentElement.classList.add('error');
+        bubble.textContent = 'Something went wrong: ' + (err.message || err) + '\n\nIf that says "Failed to fetch", your browser could not reach api.groq.com at all — check your connection/VPN, then try again. Your prompt is back in the box below so you can retry — your key is still saved in Settings.';
+        state.messages.pop();
+        els.prompt.value = text; renderAnalysis();
+      }
+    }
+  }finally{
+    state.streaming = false; state.abort = null;
+    els.submit.disabled = false; els.submit.textContent = 'Submit';
+    setAvatarState('idle');
+  }
+}
+
+/* reset + copy */
+$('resetBtn').addEventListener('click', function(){
+  if(state.streaming) stopStreaming();
+  state.messages = []; state.sessionTokens = 0;
+  els.log.innerHTML = ''; els.log.appendChild(els.empty); els.empty.style.display = '';
+  $('useIn').textContent = $('useReason').textContent = $('useOut').textContent = $('useTotal').textContent = $('useLeft').textContent = '–';
+  $('useSession').textContent = '0';
+  $('statFirst').textContent = $('statTotal').textContent = $('statTps').textContent = '–';
+  $('statsLineText').textContent = 'No replies yet — speed & token stats will show up here.';
+  state.usageLog = []; updateTPM();
+  closeDrawer();
+});
+$('copyChatBtn').addEventListener('click', function(){
+  var txt = state.messages.map(function(m){ return (m.role === 'user' ? 'You: ' : 'BIBISI Assistant: ') + m.content; }).join('\n\n');
+  if(!txt){ this.textContent = 'Nothing to copy yet'; var b=this; setTimeout(function(){ b.textContent='Copy chat'; },1400); return; }
+  navigator.clipboard.writeText(txt).then(function(){ var b=$('copyChatBtn'); b.textContent='Copied ✓'; setTimeout(function(){ b.textContent='Copy chat'; },1400); });
+});
+
+/* ================= VIEW CODE ================= */
+var codeMode = 'html';
+function codeString(){
+  var model = els.model.value, temp = els.tempN.value, max = els.maxN.value;
+  var prompt = els.prompt.value || state.messages.filter(function(m){return m.role==='user';}).slice(-1).map(function(m){return m.content;})[0] || 'Say hello.';
+  var stops = els.stop.value.split(',').map(function(s){return s.trim();}).filter(Boolean).slice(0,4);
+  var payload = {model:model, messages:[{role:'user', content:prompt}], temperature:parseFloat(temp), max_tokens:parseInt(max,10), stream:false};
+  if(stops.length) payload.stop = stops;
+  var payloadStr = JSON.stringify(payload, null, 2);
+  if(codeMode === 'js'){
+    return '// Groq chat completion — vanilla fetch\n// Replace YOUR_GROQ_API_KEY with your own key. Never commit a real key.\n\nconst res = await fetch("https://api.groq.com/openai/v1/chat/completions", {\n  method: "POST",\n  headers: {\n    "Authorization": "Bearer YOUR_GROQ_API_KEY",\n    "Content-Type": "application/json"\n  },\n  body: JSON.stringify(' + payloadStr.replace(/\n/g,'\n  ') + ')\n});\n\nconst data = await res.json();\nconsole.log(data.choices[0].message.content);\nconsole.log("Usage:", data.usage);';
+  }
+  return '<!doctype html>\n<html>\n<head><meta charset="utf-8"><title>Groq chat</title></head>\n<body>\n  <textarea id="prompt" rows="6" cols="60">' + esc(prompt) + '</textarea>\n  <button id="go">Submit</button>\n  <pre id="out"></pre>\n  <script>\n    // Replace YOUR_GROQ_API_KEY with your own key. Never commit a real key.\n    document.getElementById("go").onclick = async () => {\n      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {\n        method: "POST",\n        headers: { "Authorization": "Bearer YOUR_GROQ_API_KEY", "Content-Type": "application/json" },\n        body: JSON.stringify(' + payloadStr.replace(/\n/g,'\n        ') + ')\n      });\n      const data = await res.json();\n      document.getElementById("out").textContent = data.choices[0].message.content;\n    };\n  <\/script>\n</body>\n</html>';
+}
+function renderCode(){ $('codeBox').textContent = codeString(); }
+$('viewCodeBtn').addEventListener('click', function(){ renderCode(); $('codeModal').classList.add('open'); });
+$('codeClose').addEventListener('click', function(){ $('codeModal').classList.remove('open'); });
+$('tabHtml').addEventListener('click', function(){ codeMode='html'; this.classList.add('active'); $('tabJs').classList.remove('active'); renderCode(); });
+$('tabJs').addEventListener('click', function(){ codeMode='js'; this.classList.add('active'); $('tabHtml').classList.remove('active'); renderCode(); });
+$('copyCodeBtn').addEventListener('click', function(){
+  navigator.clipboard.writeText(codeString()).then(function(){ var b=$('copyCodeBtn'); b.textContent='Copied ✓'; setTimeout(function(){ b.textContent='Copy code'; },1400); });
+});
+document.querySelectorAll('.overlay').forEach(function(o){
+  o.addEventListener('click', function(e){ if(e.target === o && o.id !== 'keyDialog') o.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
